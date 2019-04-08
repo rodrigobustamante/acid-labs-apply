@@ -14,6 +14,7 @@ The objective of the configuratios file is the next:
 
 - docker-compose.local.yml: Make containers to run the project on a local environment.
 - docker-compose.prod.yml: Make containers to upload this containers to [Docker Hub](https://hub.docker.com).
+- dockhero-compose.yml: Docker routine to upload the project to Dockhero [DockHero](https://dockhero.io).
 
 ## 2. Containers and Projects
 
