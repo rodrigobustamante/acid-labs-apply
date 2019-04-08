@@ -1,0 +1,17 @@
+FROM node:10
+
+WORKDIR /app
+COPY . .
+RUN npm install
+
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL $REACT_APP_API_URL
+
+ARG REACT_APP_GOOGLE_MAPS
+ENV REACT_APP_GOOGLE_MAPS $REACT_APP_GOOGLE_MAPS
+
+RUN npm run build
+
+RUN npm install -g serve
+EXPOSE 3000
+CMD ["serve", "-p", "3000", "-s", "build"]

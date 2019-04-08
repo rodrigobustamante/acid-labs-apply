@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+  redis_acid:
+    image: redis
+    container_name: redis_acid
+    networks:
+      - reverse-proxy
+  backend_acid:
+    container_name: backend_acid
+    image: rodrigobustamante/acid-labs-back:1.0.0
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis_acid
+    labels:
+      - traefik.frontend.rule=Host:${DOCKHERO_HOST};PathPrefixStrip:/api
+      - traefik.frontend.entryPoints=http,https
+      - traefik.backend=backend_acid
+      - traefik.port=8000
+    environment:
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - DARKSKY_API_KEY=${DARKSKY_API_KEY}
+      - REDIS_HOST=redis_acid
+      - REDIS_PORT=6379
+    networks:
+      - reverse-proxy
+  frontend_acid:
+    image: rodrigobustamante/acid-labs-front:1.0.1
+    container_name: frontend_acid
+    restart: always
+    depends_on:
+      - backend_acid
+    labels:
+      - traefik.frontend.rule=Host:${DOCKHERO_HOST}
+      - traefik.frontend.entryPoints=http,https
+      - traefik.backend=frontend_acid
+      - traefik.port=3000
+    environment:
+      - REACT_APP_GOOGLE_MAPS=${GOOGLE_MAPS_API_KEY}
+      - REACT_APP_API_URL=${DOCKHERO_HOST}/api
+    networks:
+      - reverse-proxy
+  reverse-proxy:
+    image: traefik
+    container_name: traefik_acid
+    command: --api --docker
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - traefik.docker.network=reverse-proxy
+      - traefik.frontend.entryPoints=http,https
+      - traefik.frontend.redirect.entryPoint=https
+    networks:
+      - reverse-proxy
+networks:
+  reverse-proxy:
